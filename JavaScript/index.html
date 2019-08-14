@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	
+</head>
+<body>
+<script type="text/javascript" src="___.js"></script>
+<script type="text/javascript">
+	var canvas=document.createElement("canvas");
+	canvas.width="300";
+	canvas.height="300";
+	with(canvas.style){
+		width=canvas.width+"px";
+		height=canvas.height+"px";
+		border="1px solid";
+	}document.body.append(canvas);
+	var ctx=canvas.getContext("2d");
+
+	var f=[],dist=[],radius=40,sudut=Math.PI/4,vmax=1,fmax=0.8;
+
+	/////looping for create array 
+	for(let i=0;i<10;i++){
+		var boids={
+			x:/*2+i,*/Math.random()*100,
+			y:/*1+(i*2),*/Math.random()*100,
+			vx:Math.floor(Math.random()*(0.5-2))+2,
+			vy:Math.floor(Math.random()*(0.5-2))+2,
+			ax:0,
+			ay:0,
+			r:5,
+			alignx:0,
+			aligny:0,
+			separasix:0,
+			separasiy:0,
+			diffx:0,
+			diffy:0,
+			cohesix:0,
+			cohesiy:0
+		};
+		f.push(boids);
+	}
+
+	console.log(f);
+	
+	var init=setInterval(loop,100);
+
+
+
+
+	////looping calculation and draw
+	function loop() {
+		clear();
+		for(let i=0;i<f.length;i++){
+			let mag=0;
+			f[i].alignx=0;
+			f[i].aligny=0;
+			f[i].separasix=0;
+			f[i].separasiy=0;
+			f[i].diffx=0;
+			f[i].diffy=0;
+			f[i].cohesix=0;
+			f[i].cohesiy=0;
+			var d,total=0;
+			for(let j=0;j<f.length;j++){
+				if((i-j)!=0){
+					d=Math.sqrt(Math.pow(f[j].x-f[i].x,2)+Math.pow(f[j].y-f[i].y,2));
+					//dist.push(d);
+					if(d<radius){
+						//////perhitungan untuk menentukan sudut atar partiekel/boid
+						var u = Math.sqrt
+							(Math.pow(f[i].x,2)+
+							Math.pow(f[i].y,2));
+						var v = Math.sqrt
+							(Math.pow(f[j].x,2)+
+							Math.pow(f[j].y,2));
+						var dot = 
+							(f[i].x*f[j].x)+
+							(f[i].y*f[j].y);
+						var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
+						//console.log(angleTwo);
+
+						if(angleTwo<sudut){////menghitung bagian yang masuk kedalam sudut
+							f[i].alignx=f[i].alignx+f[j].vx,
+							f[i].aligny=f[i].aligny+f[j].vy
+							f[i].diffx=(f[i].x-f[j].x)/(d*d);
+							f[i].diffy=(f[i].y-f[j].y)/(d*d);
+							f[i].separasix=f[i].separasix+f[i].diffx;
+							f[i].separasiy=f[i].separasiy+f[i].diffy;
+							f[i].cohesix=f[i].cohesix+f[j].x;
+							f[i].cohesiy=f[i].cohesiy+f[j].y;
+							total+=1;
+						}
+					}
+				}
+			}
+			if(total>0){
+				mag=(Math.sqrt(Math.pow(f[i].x,2)+Math.pow(f[i].y,2)));
+				f[i].alignx=(f[i].alignx/total);
+				f[i].aligny=(f[i].aligny/total);
+				f[i].alignx=f[i].alignx/mag*vmax;
+				f[i].aligny=f[i].aligny/mag*vmax;
+				f[i].alignx=f[i].alignx-f[i].vx;
+				f[i].aligny=f[i].aligny-f[i].vy;
+
+				f[i].separasix=(f[i].separasix/total);
+				f[i].separasiy=(f[i].separasiy/total);
+				f[i].separasix=f[i].separasix/mag*vmax;
+				f[i].separasiy=f[i].separasiy/mag*vmax;
+				f[i].separasix=f[i].separasix-f[i].vx;
+				f[i].separasiy=f[i].separasiy-f[i].vy;
+
+				f[i].cohesix=(f[i].cohesix/total);
+				f[i].cohesiy=(f[i].cohesiy/total);
+				f[i].cohesix=f[i].cohesix/mag*vmax;
+				f[i].cohesiy=f[i].cohesiy/mag*vmax;
+				f[i].cohesix=f[i].cohesix-f[i].vx;
+				f[i].cohesiy=f[i].cohesiy-f[i].vy;
+				
+				if(mag>fmax*fmax){
+					f[i].alignx=f[i].alignx/mag*fmax;
+					f[i].aligny=f[i].aligny/mag*fmax;
+					f[i].separasix=f[i].separasix/mag*fmax;
+					f[i].separasiy=f[i].separasiy/mag*fmax;	
+					f[i].cohesix=f[i].cohesix/mag*fmax;
+					f[i].cohesiy=f[i].cohesiy/mag*fmax;
+				}
+			}
+
+			f[i].ax=f[i].ax+f[i].alignx+f[i].separasix+f[i].cohesix;
+			f[i].ay=f[i].ay+f[i].aligny+f[i].separasiy+f[i].cohesiy;
+			
+			console.log(i+" " +f[i].ax);
+			console.log(".............");
+			console.log(i+" " +f[i].ay);
+			console.log("_____");
+			console.log(i+" " +total);
+			console.log("+++++++++++");
+
+			///posisi
+			f[i].x=f[i].x+f[i].vx;
+			//console.log(i+" | posisi x : "+f[i].x);
+			f[i].y=f[i].y+f[i].vy;
+			//console.log(i+" | posisi y : "+f[i].y);console.log("_____");
+
+			///kecepatan
+			f[i].vx=f[i].vx+f[i].ax;
+			f[i].vy=f[i].vy+f[i].ay;
+
+			draw(f[i].x,f[i].y);
+			f[i].ax*=0;
+			f[i].ay*=0;
+
+			if (f[i].x<5 || f[i].x > canvas.width-5)
+	        f[i].vx = -f[i].vx;
+	    	if (f[i].y<5 || f[i].y > canvas.height-5)
+	        f[i].vy = -f[i].vy;
+
+			/*if(f[i].x<0 ) f[i].x=canvas.width;
+			if( f[i].x > canvas.width) f[i].x = 0;
+	         
+	    	if(f[i].y < 0 ) f[i].y=canvas.height;
+	    	if(f[i].y > canvas.height) f[i].y = 0;*/
+		}
+	}
+</script>
+</body>
+</html>
