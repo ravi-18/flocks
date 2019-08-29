@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	
+</head>
+<body>
+<script type="text/javascript" src="___.js"></script>
+<script type="text/javascript">
+	var canvas=document.createElement("canvas");
+	canvas.width="300";
+	canvas.height="300";
+	with(canvas.style){
+		// width=canvas.width+"px";
+		// height=canvas.height+"px";
+		border="1px solid";
+	}document.body.append(canvas);
+	var ctx=canvas.getContext("2d");
+
+	var f=[],dist=[],radius=30,sudut=Math.PI/4,vmax=1,fmax=0.8, n=3;
+	var x0=0,y0=0,xmax=50,ymax=50;
+	var align=2, separasi=1, cohesi=1;
+	/////looping for create array 
+	for(let i=0;i<n;i++){
+		var boids={
+			x:/*2+i,*/Math.random()*50,
+			y:/*1+(i*2),*/Math.random()*50,
+			vx:(Math.random()*(1-(-1)))+(-1),   //(Math.random() * (max - min)) + min
+			vy:(Math.random()*(1-(-1)))+(-1),   //(Math.random() * (max - min)) + min
+			ax:0,
+			ay:0,
+			r:5,
+			alignx:0,
+			aligny:0,
+			separasix:0,
+			separasiy:0,
+			diffx:0,
+			diffy:0,
+			cohesix:0,
+			cohesiy:0
+		};
+		f.push(boids);
+	}
+
+	console.log(f);
+	
+	var init=setInterval(loop,100);
+
+	////looping calculation and draw
+	function loop() {
+		clear();
+		for(let i=0;i<f.length;i++){
+			let mag=0;
+			f[i].alignx=0;
+			f[i].aligny=0;
+			f[i].separasix=0;
+			f[i].separasiy=0;
+			f[i].diffx=0;
+			f[i].diffy=0;
+			f[i].cohesix=0;
+			f[i].cohesiy=0;
+			var d,total=0;
+			for(let j=0;j<f.length;j++){
+				if((i-j)!=0){
+					d=Math.sqrt(Math.pow(f[j].x-f[i].x,2)+Math.pow(f[j].y-f[i].y,2));
+					//dist.push(d);
+					if(d<radius){
+						//////perhitungan untuk menentukan sudut atar partiekel/boid
+						var u = Math.sqrt
+							(Math.pow(f[i].x,2)+
+							Math.pow(f[i].y,2));
+						var v = Math.sqrt
+							(Math.pow(f[j].x,2)+
+							Math.pow(f[j].y,2));
+						var dot = 
+							(f[i].x*f[j].x)+
+							(f[i].y*f[j].y);
+						var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
+						//console.log(angleTwo);
+
+						if(angleTwo<sudut){////menghitung bagian yang masuk kedalam sudut
+							f[i].alignx=f[i].alignx+f[j].vx,
+							f[i].aligny=f[i].aligny+f[j].vy
+							f[i].diffx=(f[i].x-f[j].x)/(d*d);
+							f[i].diffy=(f[i].y-f[j].y)/(d*d);
+							f[i].separasix=f[i].separasix+f[i].diffx;
+							f[i].separasiy=f[i].separasiy+f[i].diffy;
+							f[i].cohesix=f[i].cohesix+f[j].x;
+							f[i].cohesiy=f[i].cohesiy+f[j].y;
+							total+=1;
+						}
+					}
+				}
+			}
+			if(total>0){
+				mag=(Math.sqrt(Math.pow(f[i].x,2)+Math.pow(f[i].y,2)));
+				f[i].alignx=(f[i].alignx/total);
+				f[i].aligny=(f[i].aligny/total);
+				f[i].alignx=f[i].alignx/mag*vmax;//set mag
+				f[i].aligny=f[i].aligny/mag*vmax;//set mag
+				f[i].alignx=f[i].alignx-f[i].vx;
+				f[i].aligny=f[i].aligny-f[i].vy;
+
+				f[i].separasix=(f[i].separasix/total);
+				f[i].separasiy=(f[i].separasiy/total);
+				f[i].separasix=f[i].separasix/mag*vmax;//set mag
+				f[i].separasiy=f[i].separasiy/mag*vmax;//set mag
+				f[i].separasix=f[i].separasix-f[i].vx;
+				f[i].separasiy=f[i].separasiy-f[i].vy;
+
+				f[i].cohesix=(f[i].cohesix/total);
+				f[i].cohesiy=(f[i].cohesiy/total);
+				f[i].cohesix=f[i].cohesix/mag*vmax;//set mag
+				f[i].cohesiy=f[i].cohesiy/mag*vmax;//set mag
+				f[i].cohesix=f[i].cohesix-f[i].vx;
+				f[i].cohesiy=f[i].cohesiy-f[i].vy;
+				
+				if(mag>fmax*fmax){////limit
+					f[i].alignx=f[i].alignx/mag*fmax;
+					f[i].aligny=f[i].aligny/mag*fmax;
+					f[i].separasix=f[i].separasix/mag*fmax;
+					f[i].separasiy=f[i].separasiy/mag*fmax;	
+					f[i].cohesix=f[i].cohesix/mag*fmax;
+					f[i].cohesiy=f[i].cohesiy/mag*fmax;
+				}
+			}
+
+			f[i].ax=f[i].ax+(f[i].alignx*align)+(f[i].separasix*separasi)+(f[i].cohesix*cohesi);
+			f[i].ay=f[i].ay+(f[i].aligny*align)+(f[i].separasiy*separasi)+(f[i].cohesiy*cohesi);
+			
+			console.log(i+" " +f[i].ax);
+			console.log(".............");
+			console.log(i+" " +f[i].ay);
+			console.log("_____");
+			console.log(i+" " +total);
+			console.log("+++++++++++");
+
+			///posisi
+			f[i].x=f[i].x+f[i].vx;
+			//console.log(i+" | posisi x : "+f[i].x);
+			f[i].y=f[i].y+f[i].vy;
+			//console.log(i+" | posisi y : "+f[i].y);console.log("_____");
+
+			///kecepatan
+			f[i].vx=f[i].vx+f[i].ax;
+			f[i].vy=f[i].vy+f[i].ay;
+
+			X=((f[i].x-x0)/(xmax-x0))*canvas.width;
+			Y=-((f[i].y-y0)/(ymax-y0))*canvas.height + canvas.height;
+
+			draw(X,Y,f[i].vx,f[i].vy,radius,angleTwo);
+			f[i].ax*=0;
+			f[i].ay*=0;
+
+				let l = 1;
+				let desired = null;
+				if (f[i].x < l) {
+					desired = {x:vmax,y:f[i].vy};
+				} else if (f[i].x > xmax - l) {
+					desired ={x:-vmax,y:f[i].vy};
+				}
+
+				if (f[i].y < l) {
+					desired = {x:f[i].vx,y:vmax};
+				} else if (f[i].y > ymax - l) {
+					desired = {x:f[i].vx,y: -vmax};
+				}
+
+				if (desired !== null) {
+					let len=Math.sqrt(desired.x*desired.x+desired.y*desired.y);/////setmag
+					if (len !== 0) desired.x*(1 / len)*vmax; desired.y*(1 / len)*vmax;////setmag
+					let steer = {x:desired.x-f[i].vx, y:desired.y-f[i].vy};
+
+					var mSq =steer.x*steer.x+steer.y*steer.y;
+
+					// if(mSq>fmax*fmax){///limit
+					// 	steer.x=(steer.x/(Math.sqrt(mSq))*fmax,
+					// 	steer.y=(steer.y/(Math.sqrt(mSq))*fmax;
+					// }
+					f[i].ax=steer.x;
+					f[i].ay=steer.y;
+				}
+
+				
+			
+
+	    	/*if (f[i].x > canvas.width-10) {
+				//Make a desired vector that retains the y direction of the vehicle but points the x direction directly away from the window’s left edge.
+				let vec={x:vmax,y:f[i].vy};
+	  			let desired = vec;
+	  			let steer = {x:desired.x-f[i].vx,y:desired.y-f[i].vy};
+	  			mag=(Math.sqrt(Math.pow(steer.x,2)+Math.pow(steer.y,2)));
+	  			steer.x=steer.x/mag*fmax;
+	  			steer.y=steer.y/mag*fmax;
+	  			f[i].ax=steer.x;
+	  			f[i].ay=steer.y;
+			}
+*/
+
+
+
+
+			/*if(f[i].x<0 ) f[i].x=canvas.width;
+			if( f[i].x > canvas.width) f[i].x = 0;
+	         
+	    	if(f[i].y < 0 ) f[i].y=canvas.height;
+	    	if(f[i].y > canvas.height) f[i].y = 0;*/
+		}
+	}
+</script>
+</body>
+</html>
