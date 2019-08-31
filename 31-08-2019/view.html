@@ -186,7 +186,7 @@
 			draw(X,Y,f[i].vx,f[i].vy,radiusAC,sudut1,sudut2);
 			f[i].ax*=0;
 			f[i].ay*=0;
-
+/*
 				let l = 2;
 				let desired = null;
 				if (f[i].x < l) {
@@ -215,14 +215,14 @@
 					f[i].ax=steer.x;
 					f[i].ay=steer.y;
 				}
-
-			/*if(f[i].x<0 ) f[i].x=canvas.width;
-			if( f[i].x > canvas.width) f[i].x = 0;
+*/
+		if(f[i].x<0 ) f[i].x=xmax;
+		if( f[i].x > xmax) f[i].x = 0;
 	         
-	    	if(f[i].y < 0 ) f[i].y=canvas.height;
-	    	if(f[i].y > canvas.height) f[i].y = 0;*/
+	    	if(f[i].y < 0 ) f[i].y=ymax;
+	    	if(f[i].y > ymax) f[i].y = 0;
 
-	    time=time+1;	
+		time=time+1;	
 		}
 	}if(time==stop){
 		clearInterval(init);
