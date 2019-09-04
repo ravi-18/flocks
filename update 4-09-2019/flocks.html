@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script type="text/javascript" src="___.js"></script>
+<script type="text/javascript">
+
+// Define global variables
+var params;
+var Body,Box,taIn, taOut, caOut;
+var btLoad, btRead, btStart, btInfo;
+var tbeg, tend, dt, t, Tdata, Tproc=1000/5, proc, iter, Niter,stop=5000;
+var digit;
+var xmin=0, ymin=0, xmax=50, ymax=50;
+var XMIN, XMAX, YMIN, YMAX;
+var o, N;
+var grav1, elec1, magn1, drag1;
+var grav2, elec2, magn2, norm2, sprn2;
+var iLeader;
+var bc;
+var align, separasi, cohesi;
+var f=[],
+	dist=[],
+	radiusAC=3,
+	radiusS=1,
+	sudut1=Math.PI*(0),
+	sudut2=Math.PI*((2/3)-(1/3)),
+	vmin=0.1,
+	vmax,
+	fmax, 
+	n;
+
+// Execute main function
+main();
+
+// Define main function
+function main() {
+	initParams();
+	createVisualElements();
+}
+
+// Initialize parameters
+function initParams() {
+	var p = "";
+	p+="#Initialize\n";
+	p+="VelocityMax	: 0.5\n";
+	p+="ForceMax	: 0.5\n";
+	p+="N-Partikle	: 25\n";
+	p+="Alignment	: 0.05\n";
+	p+="Cohesion	: 0.1\n";
+	p+="Separation	: 0.1\n";
+	p+="Time_Out	: 2000\n";
+	p+="\n";
+	
+	params = p;
+	
+	digit = 4;
+}
+
+///create visual element
+function createVisualElements(){
+	Body=document.getElementsByTagName('body')[0];
+	with(Body.style){
+		margin="auto";
+		padding="auto";
+	}
+	//create Element Div 
+	Box=document.createElement("div");
+	with(Box.style){
+		width="827px";
+		height="518px";
+		margin="auto";
+		padding="auto";
+		background="#eee";
+	}	
+	//create Element Div left
+	DivL=document.createElement("div");
+	with(DivL.style){
+		width="310px";
+		height="510px";
+		border="1px solid";
+		float="left";
+		margin="2px 0 0 1px ";
+		border = "1px solid #eee";
+		background = "#eee";
+	}
+	//create Element Div right
+	DivR=document.createElement("div");
+	with(DivR.style){
+		width="510px";
+		height="510px";
+		float="left";
+		margin="2px 0 0 1px ";
+	}
+	//create Element text area input
+	taIn=document.createElement("textarea");
+	with(taIn.style){
+		width="300px";
+		height="230px";
+		overflowY = "scroll";
+	}
+	//create Element text area output
+	taOut=document.createElement("textarea");
+	with(taOut.style){
+		width="300px";
+		height="230px";
+		overflowY = "scroll";
+	}
+	//create Element button Load
+	btLoad=document.createElement("button");
+	with(btLoad){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Load";
+		id="Load";
+		disabled=false;
+		addEventListener("click", buttonClick);
+	}
+	//create Element button Read
+	btRead=document.createElement("button");
+	with(btRead){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Read";
+		id="Read";
+		disabled=true;
+		addEventListener("click", buttonClick);	
+	}
+	//create Element button Start
+	btStart=document.createElement("button");
+	with(btStart){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Start";
+		id="Start";
+		disabled=true;
+		addEventListener("click", buttonClick);
+	}
+	//create Element button Info
+	btInfo=document.createElement("button");
+	with(btInfo){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Info";
+		id="Info";
+		addEventListener("click", buttonClick);
+	}
+	//create Element Canvas
+	caOut=document.createElement("canvas");
+	caOut.width="509";
+	caOut.height="509";
+	with(caOut.style){
+		width=caOut.width+"px";
+		height=caOut.height+"px";
+		border = "1px solid #aaa";
+		background = "#fff";
+	}
+
+	document.body.append(Box);
+	Box.append(DivL);
+	DivL.append(taIn);
+	DivL.append(taOut);
+	DivL.append(btLoad);
+	DivL.append(btRead);
+	DivL.append(btStart);
+	DivL.append(btInfo);
+	Box.append(DivR);
+	DivR.append(caOut);
+}
+
+// Handle event of button click
+function buttonClick() {
+	var id = event.target.id;
+	switch(id) {
+	case "Load":
+		btRead.disabled = false;
+		loadParams();
+	break;
+	case "Read":
+		btStart.disabled = false;
+		readParams();
+		
+		clearCanvas(caOut);
+		//for(var i = 0; i < N; i++) {
+			boids(caOut);
+			//console.log(f[i]);
+		//}
+	break;
+	case "Start":
+		if(btStart.innerHTML == "Start") {
+			btLoad.disabled = true;
+			btRead.disabled = true;
+			btInfo.disabled = true;
+			btStart.innerHTML = "Stop";
+			proc = setInterval(loop, Tproc);
+		} else {
+			btLoad.disabled = false;
+			btRead.disabled = false;
+			btInfo.disabled = false;
+			btStart.innerHTML = "Start";
+			clearInterval(proc);
+		}
+	break;
+	case "Info":
+		var info = "";
+		info += "sspp.js\n";
+		info += "Simulation of self-propelled particles";
+		info += "Sparisoma Viridi, ";
+		info += "Ariq Dhia Irfanudin, ";
+		info += "Dinda Ravi Algifari, ";
+		info += "Yudha Satya Perkasa\n";
+		info += "Sumber layout : https://github.com/dudung/butiran.js\n";
+		info += "\n";
+		info += "Load  load parameters\n";
+		info += "Read  read parameters\n";
+		info += "Start start simulation\n";
+		info += "Info  show this messages\n";
+		info += "\n";
+		addText(info).to(taOut);
+	break;
+	default:
+	}
+}
+
+// Load parameters
+function loadParams() {
+	clearText(taIn);
+	addText(params).to(taIn);
+}
+
+// Clear a Textarea
+function clearText() {
+	var ta = arguments[0];
+	ta.value = "";
+}
+
+// Add text to a textarea
+function addText(){
+	var text=arguments[0];
+	var result={
+		to:function(){
+			var ta=arguments[0];
+			ta.value +=text;
+			ta.scrollTop = ta.scrollHeight;
+		}
+	}
+	return result;
+}
+
+// Get parameter value from a Textarea
+function getValue() {
+	var key = arguments[0];
+	var result = {
+		from: function() {
+			var ta = arguments[0];
+			var lines = ta.value.split("\n");
+			var Nl = lines.length;
+			for(var l = 0; l < Nl; l++) {
+				var words = lines[l].split(" ");
+				var Nw = words.length;
+				var value;
+				if(words[0].indexOf(key) == 0) {
+					if(Nw == 2) {
+						value = parseFloat(words[1]);
+					return value; console.log(value);
+					}
+				}
+			}
+		}
+	}
+	return result;	
+}
+
+// Clear canvas
+function clearCanvas(caOut) {
+	var width = caOut.width;
+	var height = caOut.height;
+	var cx = caOut.getContext("2d");
+	cx.clearRect(0, 0, width, height);
+}
+
+// Read parameters
+function readParams() {
+	// Get parameters of initialize
+	var kecepatanMax=getValue("VelocityMax").from(taIn);console.log(kecepatanMax);
+	vmax=kecepatanMax;
+	var gayaMax=getValue("ForceMax").from(taIn);console.log(gayaMax);
+	fmax=gayaMax;
+	var jumlahPartikel=getValue("N-Partikle").from(taIn);console.log(jumlahPartikel);
+	n=jumlahPartikel;
+	f=[];
+	var alignMent=getValue("Alignment").from(taIn);console.log(alignMent);
+	align=alignMent;
+	var separation=getValue("Separation").from(taIn);console.log(separation);
+	separasi=separation; 
+	var Cohesi=getValue("Cohesion").from(taIn);console.log(Cohesi);
+	cohesi=Cohesi;
+	var waktu=getValue("Time_Out").from(taIn);console.log(waktu);
+	stop=waktu;
+}
+
+// Component boids
+function boids(){
+	var ca = arguments[0];
+	var ctx = ca.getContext("2d");
+	/////looping for create array 
+	for(let i=0;i<n;i++){
+		var boids={
+			x:/*2+i,*/Math.random()*50,
+			y:/*1+(i*2),*/Math.random()*50,
+			vx:(Math.random()*(vmax-(vmin)))+(vmin),   //(Math.random() * (max - min)) + min
+			vy:(Math.random()*(vmax-(vmin)))+(vmin),   //(Math.random() * (max - min)) + min
+			ax:0,
+			ay:0,
+			r:5,
+			alignx:0,
+			aligny:0,
+			separasix:0,
+			separasiy:0,
+			diffx:0,
+			diffy:0,
+			cohesix:0,
+			cohesiy:0
+		};
+		f.push(boids);
+	}return f,console.log(f);
+}
+
+
+function loop() {
+		//if(time<stop){
+		clear(caOut);
+		for(let i=0;i<f.length;i++){
+			let magStMgA=0;
+			let magStMgS=0;
+			let magStMgC=0;
+			let magLimA=0;
+			let magLimS=0;
+			let magLimC=0;
+			f[i].alignx=0;
+			f[i].aligny=0;
+			f[i].separasix=0;
+			f[i].separasiy=0;
+			f[i].diffx=0;
+			f[i].diffy=0;
+			f[i].cohesix=0;
+			f[i].cohesiy=0;
+			var d,total=0;
+			
+			for(let j=0;j<f.length;j++){
+				if((i-j)!=0){
+					d=Math.sqrt(Math.pow(f[j].x-f[i].x,2)+Math.pow(f[j].y-f[i].y,2));
+					
+					//////perhitungan untuk menentukan sudut atar partiekel/boid
+					var u = Math.sqrt
+						(Math.pow(f[i].x,2)+
+						Math.pow(f[i].y,2));
+					var v = Math.sqrt
+						(Math.pow(f[j].x,2)+
+						Math.pow(f[j].y,2));
+					var dot = 
+						(f[i].x*f[j].x)+
+						(f[i].y*f[j].y);
+					var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
+					if(d<radiusAC&&angleTwo>sudut1&&angleTwo<sudut2){
+				
+						let besarnyaVj=0;
+						////alignment
+						besarnyaVj=Math.sqrt(Math.pow(f[j].vx,2)+Math.pow(f[j].vy,2));
+						f[i].alignx=f[i].alignx+f[j].vx/besarnyaVj;
+						f[i].aligny=f[i].aligny+f[j].vy/besarnyaVj;
+						
+						if(d<radiusS){
+							////separation
+							f[i].diffx=(f[i].x-f[j].x)/(Math.pow(d,2));
+							f[i].diffy=(f[i].y-f[j].y)/(Math.pow(d,2));
+							f[i].separasix=f[i].separasix+f[i].diffx;
+							f[i].separasiy=f[i].separasiy+f[i].diffy;
+						}
+						////cohesien
+						f[i].cohesix=f[i].cohesix+((f[j].x-f[i].x)/d);
+						f[i].cohesiy=f[i].cohesiy+((f[j].y-f[i].y)/d);
+						total+=1;
+					}
+					
+				}
+			}
+			if(total>0){
+				////alignment
+				magStMgA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
+				f[i].alignx=(f[i].alignx/total);
+				f[i].aligny=(f[i].aligny/total);''
+				f[i].alignx=f[i].alignx/magStMgA*vmax;//set mag
+				f[i].aligny=f[i].aligny/magStMgA*vmax;//set mag
+				f[i].alignx=f[i].alignx-f[i].vx;
+				f[i].aligny=f[i].aligny-f[i].vy;
+				magLimA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
+				if(magLimA>fmax*fmax){////limit
+					f[i].alignx=f[i].alignx/magLimA*fmax;
+					f[i].aligny=f[i].aligny/magLimA*fmax;
+				}
+				////separation
+				magStMgS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
+				f[i].separasix=f[i].separasix/magStMgS*vmax;//set mag
+				f[i].separasiy=f[i].separasiy/magStMgS*vmax;//set mag
+				f[i].separasix=f[i].separasix-f[i].vx;
+				f[i].separasiy=f[i].separasiy-f[i].vy;
+				magLimS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
+				if(magLimS>fmax*fmax){////limit
+					f[i].separasix=f[i].separasix/magLimS*fmax;
+					f[i].separasiy=f[i].separasiy/magLimS*fmax;
+				}				
+				if(magStMgS==0){
+					f[i].separasix=0;
+					f[i].separasiy=0;
+				}
+				////cohesion
+				magStMgC=
+				f[i].cohesix=(f[i].cohesix/total);
+				f[i].cohesiy=(f[i].cohesiy/total);
+				f[i].cohesix=f[i].cohesix/magStMgC*vmax;//set mag
+				f[i].cohesiy=f[i].cohesiy/magStMgC*vmax;//set mag
+				f[i].cohesix=f[i].cohesix-f[i].vx;
+				f[i].cohesiy=f[i].cohesiy-f[i].vy;
+				magLimC=(Math.sqrt(Math.pow(f[i].cohesix,2)+Math.pow(f[i].cohesiy,2)));
+				if(magLimC>fmax*fmax){////limit
+					f[i].cohesix=f[i].cohesix/magLimC*fmax;
+					f[i].cohesiy=f[i].cohesiy/magLimC*fmax;
+				}
+			}
+			f[i].ax=f[i].ax+(f[i].alignx*align)+(f[i].separasix*separasi)+(f[i].cohesix*cohesi);
+			f[i].ay=f[i].ay+(f[i].aligny*align)+(f[i].separasiy*separasi)+(f[i].cohesiy*cohesi);
+			
+			///posisi
+			f[i].x=f[i].x+f[i].vx;
+			
+			f[i].y=f[i].y+f[i].vy;
+			
+			///kecepatan
+			f[i].vx=f[i].vx+f[i].ax;
+			f[i].vy=f[i].vy+f[i].ay;
+
+			X=((f[i].x-xmin)/(xmax-xmin))*caOut.width;
+			Y=-((f[i].y-ymin)/(ymax-ymin))*caOut.height + caOut.height;
+			draw(caOut,X,Y,f[i].vx,f[i].vy,radiusAC,sudut1,sudut2);
+			f[i].ax*=0;
+			f[i].ay*=0;
+
+		if(f[i].x<0 ) f[i].x=xmax;
+		if( f[i].x > xmax) f[i].x = 0;
+	         
+	    	if(f[i].y < 0 ) f[i].y=ymax;
+	    	if(f[i].y > ymax) f[i].y = 0;
+		//time=time+1;	
+		}
+	// }if(time==stop){
+	// 	clearInterval(init);
+	// }time+=time2;console.log(time);
+	}
+
+</script>
+</body>
+</html>
