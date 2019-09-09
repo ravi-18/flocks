@@ -4,33 +4,254 @@
 	<title></title>
 </head>
 <body>
+<script type="text/javascript" src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script type="text/javascript" src="___.js"></script>
 <script type="text/javascript">
-
-// Define global variables
-var params;
-var Body,Box,taIn, taOut, caOut;
+	// Define global variables
+var params,Boids;
+var Body,Box, graphOut,taIn, taOut, caOut;
 var btLoad, btRead, btStart, btInfo;
-var tbeg, tend, dt, t, Tdata, Tproc=1000/5, proc, iter, Niter,stop=5000;
-var digit;
+var Tproc=1000/120, proc;
 var xmin=0, ymin=0, xmax=50, ymax=50;
 var XMIN, XMAX, YMIN, YMAX;
 var o, N;
-var grav1, elec1, magn1, drag1;
-var grav2, elec2, magn2, norm2, sprn2;
-var iLeader;
-var bc;
-var align, separasi, cohesi;
+var align, separasi, cohesi,random;
 var f=[],
-	dist=[],
-	radiusAC=3,
-	radiusS=1,
+	arrDataX=[],
+	arrDataY=[],
+	arrDataNo=[],
+	//radius,
+	radiusC,
+	radiusA,	
+	radiusS,
 	sudut1=Math.PI*(0),
-	sudut2=Math.PI*((2/3)-(1/3)),
-	vmin=0.1,
-	vmax,
+	sudut2=Math.PI*((2/3)-(1/3));
+var vmax,
 	fmax, 
-	n;
+	vmin,
+	n1,n2,
+	idx;
+
+	// Component boids
+function boids(){
+	var ca = arguments[0];
+	var ctx = ca.getContext("2d");
+	/////looping for create array 
+	for(let i=0;i<n1;i++){
+		Boids={
+			x:1+i,//Math.random()*50,
+			y:1+i,//Math.random()*50,
+			vx:(Math.random()*(vmax-(vmin)))+(vmin),  //(Math.random() * (max - min)) + min//(0.05-(-0.05)))+(-0.05),//
+			vy:(Math.random()*(vmax-(vmin)))+(vmin),  //(Math.random() * (max - min)) + min//(0.05-(-0.05)))+(-0.05),//
+			ax:0,
+			ay:0,
+			r:5,
+			alignx:0,
+			aligny:0,
+			separasix:0,
+			separasiy:0,
+			diffx:0,
+			diffy:0,
+			cohesix:0,
+			cohesiy:0,
+			randomX:0,
+			randomY:0,
+			idx:i,
+			grup:0
+		};
+		f.push(Boids);
+	}
+	for(let l=n1;l<(n1+n2);l++){
+			Boids={
+				x:18+l,//Math.random()*50,
+				y:18+l,//Math.random()*50,
+				vx:(Math.random()*(-vmax-(-vmin)))+(-vmin),  //(Math.random() * (max - min)) + min//(0.05-(-0.05)))+(-0.05),//
+				vy:(Math.random()*(-vmax-(-vmin)))+(-vmin),  //(Math.random() * (max - min)) + min//(0.05-(-0.05)))+(-0.05),//
+				ax:0,
+				ay:0,
+				r:5,
+				alignx:0,
+				aligny:0,
+				separasix:0,
+				separasiy:0,
+				diffx:0,
+				diffy:0,
+				cohesix:0,
+				cohesiy:0,
+				randomX:0,
+				randomY:0,
+				idx:l,
+				grup:0
+			};
+			f.push(Boids);
+		}
+	return f,console.log(f);
+}
+
+////looping 
+function loop() {
+		arrDataX=[];
+		arrDataY=[];
+		arrDataNo=[];
+		clear(caOut);
+		for(let i=0;i<f.length;i++){
+			let magStMgA=0;
+			let magStMgS=0;
+			let magStMgC=0;
+			let magLimA=0;
+			let magLimS=0;
+			let magLimC=0;
+			f[i].alignx=0;
+			f[i].aligny=0;
+			f[i].separasix=0;
+			f[i].separasiy=0;
+			f[i].diffx=0;
+			f[i].diffy=0;
+			f[i].cohesix=0;
+			f[i].cohesiy=0;
+			f[i].randomX=1;
+			f[i].randomY=1;
+			var d,totalA=0,totalC=0;
+			
+			for(let j=0;j<f.length;j++){
+				if((i-j)!=0){
+					d=Math.sqrt(Math.pow(f[j].x-f[i].x,2)+Math.pow(f[j].y-f[i].y,2));
+					
+					//////perhitungan untuk menentukan sudut atar partiekel/boid
+					var u = Math.sqrt
+						(Math.pow(f[i].x,2)+
+						Math.pow(f[i].y,2));
+					var v = Math.sqrt
+						(Math.pow(f[j].x,2)+
+						Math.pow(f[j].y,2));
+					var dot = 
+						(f[i].x*f[j].x)+
+						(f[i].y*f[j].y);
+					var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
+					if(d<radiusS&&angleTwo>sudut1&&angleTwo<sudut2){
+							////separation
+							f[i].diffx=(f[i].x-f[j].x)/(Math.pow(d,2));
+							f[i].diffy=(f[i].y-f[j].y)/(Math.pow(d,2));
+							f[i].separasix=f[i].separasix+f[i].diffx;
+							f[i].separasiy=f[i].separasiy+f[i].diffy;
+						}
+
+					if(d<radiusC&&angleTwo>sudut1&&angleTwo<sudut2){
+						////cohesien
+						f[i].cohesix=f[i].cohesix+((f[j].x-f[i].x)/d);
+						f[i].cohesiy=f[i].cohesiy+((f[j].y-f[i].y)/d);
+						totalC+=1;
+						//arrDataNo.push(i);arrDataY.push(f[j].idx);arrDataX.push(totalC);
+						//console.log("grup : "+totalC+" i : "+i+" dengan "+"j : "+j);	
+					}
+
+					if(d<radiusA&&angleTwo>sudut1&&angleTwo<sudut2){
+						let besarnyaVj=0;
+						////alignment
+						besarnyaVj=Math.sqrt(Math.pow(f[j].vx,2)+Math.pow(f[j].vy,2));
+						f[i].alignx=f[i].alignx+f[j].vx/besarnyaVj;
+						f[i].aligny=f[i].aligny+f[j].vy/besarnyaVj;
+						totalA+=1;
+					}
+				}
+			}
+			if(totalA+totalC>0){
+				////alignment
+				magStMgA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
+				f[i].alignx=(f[i].alignx/totalA);
+				f[i].aligny=(f[i].aligny/totalA);
+				f[i].alignx=f[i].alignx/magStMgA*vmax;//set mag
+				f[i].aligny=f[i].aligny/magStMgA*vmax;//set mag
+				f[i].alignx=f[i].alignx-f[i].vx;
+				f[i].aligny=f[i].aligny-f[i].vy;
+				magLimA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
+				if(magLimA>fmax*fmax){////limit
+					f[i].alignx=f[i].alignx/magLimA*fmax;
+					f[i].aligny=f[i].aligny/magLimA*fmax;
+				}
+				if(magStMgA==0 && totalA==0){
+					f[i].alignx=0;
+					f[i].aligny=0;
+				}
+				////separation
+				magStMgS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
+				f[i].separasix=f[i].separasix/magStMgS*vmax;//set mag
+				f[i].separasiy=f[i].separasiy/magStMgS*vmax;//set mag
+				f[i].separasix=f[i].separasix-f[i].vx;
+				f[i].separasiy=f[i].separasiy-f[i].vy;
+				magLimS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
+				if(magLimS>fmax*fmax){////limit
+					f[i].separasix=f[i].separasix/magLimS*fmax;
+					f[i].separasiy=f[i].separasiy/magLimS*fmax;
+				}				
+				if(magStMgS==0){
+					f[i].separasix=0;
+					f[i].separasiy=0;
+				}
+				////cohesion
+				magStMgC=(Math.sqrt(Math.pow(f[i].cohesix,2)+Math.pow(f[i].cohesiy,2)));
+				f[i].cohesix=(f[i].cohesix/totalC);
+				f[i].cohesiy=(f[i].cohesiy/totalC);
+				f[i].cohesix=f[i].cohesix/magStMgC*vmax;//set mag
+				f[i].cohesiy=f[i].cohesiy/magStMgC*vmax;//set mag
+				f[i].cohesix=f[i].cohesix-f[i].vx;
+				f[i].cohesiy=f[i].cohesiy-f[i].vy;
+				magLimC=(Math.sqrt(Math.pow(f[i].cohesix,2)+Math.pow(f[i].cohesiy,2)));
+				if(magLimC>fmax*fmax){////limit
+					f[i].cohesix=f[i].cohesix/magLimC*fmax;
+					f[i].cohesiy=f[i].cohesiy/magLimC*fmax;
+				}
+				if(magStMgC==0 && totalC==0){
+					f[i].cohesix=0;
+					f[i].cohesiy=0;
+				}
+			}
+			f[i].randomX=random*f[i].randomX;
+			f[i].randomY=random*f[i].randomY;
+
+			///percepatan
+			f[i].ax=f[i].ax+(f[i].alignx*align)+(f[i].separasix*separasi)+(f[i].cohesix*cohesi)/*+f[i].randomX*/;
+			f[i].ay=f[i].ay+(f[i].aligny*align)+(f[i].separasiy*separasi)+(f[i].cohesiy*cohesi)/*+f[i].randomY*/;
+
+			///kecepatan
+			f[i].vx=f[i].vx+f[i].ax;
+			f[i].vy=f[i].vy+f[i].ay;
+
+			///limit kecepatan
+			var magLimV=(Math.sqrt(Math.pow(f[i].vx,2)+Math.pow(f[i].vy,2)));
+			if(magLimV>vmax*vmax){////limit
+				f[i].vx=f[i].vx/magLimV*vmax;
+				f[i].vy=f[i].vy/magLimV*vmax;
+			}
+
+			///posisi
+			f[i].x=f[i].x+f[i].vx;
+			f[i].y=f[i].y+f[i].vy;
+
+			X=((f[i].x-xmin)/(xmax-xmin))*caOut.width;
+			Y=-((f[i].y-ymin)/(ymax-ymin))*caOut.height + caOut.height;
+			draw(caOut,X,Y,f[i].vx,f[i].vy,radiusA,sudut1,sudut2);
+			f[i].ax*=0;
+			f[i].ay*=0;
+
+			if(f[i].x<0 ) f[i].x=xmax;
+			if( f[i].x > xmax) f[i].x = 0;
+	         
+	    	if(f[i].y < 0 ) f[i].y=ymax;
+	    	if(f[i].y > ymax) f[i].y = 0;
+		//time=time+1;	
+		var q={
+			x:f[i].ax,
+			y:f[i].ay
+		};
+		arrDataNo.push(f[i].idx);
+		arrDataX.push(f[i].x.toFixed(3));
+		arrDataY.push(f[i].y.toFixed(3));
+		
+		//console.log("x : "+f[i].ax+"| y : "+f[i].ay);
+	}	//console.log("___________________")
+}
+
 
 // Execute main function
 main();
@@ -45,18 +266,27 @@ function main() {
 function initParams() {
 	var p = "";
 	p+="#Initialize\n";
-	p+="VelocityMax	: 0.5\n";
-	p+="ForceMax	: 0.5\n";
-	p+="N-Partikle	: 25\n";
-	p+="Alignment	: 0.05\n";
-	p+="Cohesion	: 0.1\n";
-	p+="Separation	: 0.1\n";
-	p+="Time_Out	: 2000\n";
+	//p+="N-Partikle		: 4\n";
+	p+="VelocityMax		: 0.05\n";
+	p+="ForceMax		: 0.055\n";
+	p+="RadiusCohesion		: 7\n";
+	p+="RadiusAlignment		: 3\n";
+	p+="RadiusSeparation	: 0.8\n";
+	p+="Cohesion		: 0.08\n";
+	p+="Alignment		: 0.1\n";
+	p+="Separation		: 0.05\n";
+	p+="\n";
+	p+="#Grup\n";
+	p+="Kelompok_1		: 16 \n";
+	p+="Kelompok_2		: 16 \n";
+	p+="Formasi 		: 1\n";
+	//p+="Gaya_acak		: 0.5\n";
+	//p+="Time_Out		: 2000\n";
 	p+="\n";
 	
 	params = p;
 	
-	digit = 4;
+	//digit = 4;
 }
 
 ///create visual element
@@ -71,10 +301,20 @@ function createVisualElements(){
 	with(Box.style){
 		width="827px";
 		height="518px";
-		margin="auto";
-		padding="auto";
+		margin="10px";
+		// padding="auto";
 		background="#eee";
-	}	
+		float="left";
+	}
+	//create output graph
+	graphOut=document.createElement("div");
+	graphOut.id="graph";
+	with(graphOut.style){
+		width="500px";
+		height="518px";
+		float="left";
+		margin="10px 0";
+	}
 	//create Element Div left
 	DivL=document.createElement("div");
 	with(DivL.style){
@@ -167,6 +407,7 @@ function createVisualElements(){
 	}
 
 	document.body.append(Box);
+	document.body.append(graphOut);
 	Box.append(DivL);
 	DivL.append(taIn);
 	DivL.append(taOut);
@@ -187,14 +428,15 @@ function buttonClick() {
 		loadParams();
 	break;
 	case "Read":
-		btStart.disabled = false;
 		readParams();
-		
 		clearCanvas(caOut);
-		//for(var i = 0; i < N; i++) {
-			boids(caOut);
-			//console.log(f[i]);
-		//}
+		boids(caOut);
+		for(var y=0;y<n1+n2;y++){
+			X=((f[y].x-xmin)/(xmax-xmin))*caOut.width;console.log(X);
+			Y=-((f[y].y-ymin)/(ymax-ymin))*caOut.height + caOut.height;console.log(Y);
+			draw(caOut,X,Y,f[y].vx,f[y].vy,radiusA,sudut1,sudut2);
+		}
+		btStart.disabled = false;
 	break;
 	case "Start":
 		if(btStart.innerHTML == "Start") {
@@ -203,22 +445,80 @@ function buttonClick() {
 			btInfo.disabled = true;
 			btStart.innerHTML = "Stop";
 			proc = setInterval(loop, Tproc);
+			graphOut.style.border="";
+			graphOut.style.background="#fff";
+			graphOut.innerHTML="";
 		} else {
 			btLoad.disabled = false;
 			btRead.disabled = false;
 			btInfo.disabled = false;
 			btStart.innerHTML = "Start";
+			var tx ="Nomor"+"	";
+				tx+="Index"+"	";
+				tx+="Pos X"+"	";
+				tx+="Pos Y"+"\n";
+				addText(tx).to(taOut);
+			for(var i=0;i<arrDataX.length;i++){
+				tx =(i+1)+"	";
+				tx+=arrDataNo[i]+"	";
+				tx+=arrDataX[i]+"	";
+				tx+=arrDataY[i]+"\n";
+				addText(tx).to(taOut);
+				var trace1 = {
+					x: arrDataX,
+					y: arrDataY,
+					mode: 'markers'
+				};
+
+				var data = [trace1];
+				var layout ={
+					title: 'Grafik Posisi boids',
+					xaxis: {
+						title: 'Posisi X',
+						//showgrid: false,
+						//zeroline: false
+					},
+					yaxis: {
+						title: 'Posisi Y',
+						//showline: false,
+						//zeroline: false
+					}
+				};
+				Plotly.newPlot('graph', data, layout);
+				graphOut.style.border="1px solid";
+				graphOut.style.background="#eee";
+			
+			}
+			tx="\n";
+			addText(tx).to(taOut);
+
+
+			///pengecekan nilai kecepatan dan percepatan
+			var dataV="idx	"+"kecepatan	"+/*"percepatan	"+*/"\n";
+			for(var u=0;u<f.length;u++){
+				dataV+=f[u].idx;
+				dataV+="	"+f[u].vx.toFixed(2);
+				dataV+="	"+f[u].vy.toFixed(2);
+				// dataV+="	"+f[u].ax.toFixed(2);
+				// dataV+="	"+f[u].ay.toFixed(2);
+				dataV+="\n";
+				
+			}
+			dataV+="\n";
+			addText(dataV).to(taOut);
 			clearInterval(proc);
 		}
 	break;
 	case "Info":
 		var info = "";
-		info += "sspp.js\n";
+		info += "\n";
+		info += "floks.js\n";
 		info += "Simulation of self-propelled particles";
 		info += "Sparisoma Viridi, ";
 		info += "Ariq Dhia Irfanudin, ";
 		info += "Dinda Ravi Algifari, ";
 		info += "Yudha Satya Perkasa\n";
+		info += "sorce : http://github.com/ravi-18/flocks/\n";
 		info += "Sumber layout : https://github.com/dudung/butiran.js\n";
 		info += "\n";
 		info += "Load  load parameters\n";
@@ -266,7 +566,7 @@ function getValue() {
 			var lines = ta.value.split("\n");
 			var Nl = lines.length;
 			for(var l = 0; l < Nl; l++) {
-				var words = lines[l].split(" ");
+				var words = lines[l].split(":");
 				var Nw = words.length;
 				var value;
 				if(words[0].indexOf(key) == 0) {
@@ -292,182 +592,35 @@ function clearCanvas(caOut) {
 // Read parameters
 function readParams() {
 	// Get parameters of initialize
-	var kecepatanMax=getValue("VelocityMax").from(taIn);console.log(kecepatanMax);
+	var kecepatanMax=getValue("VelocityMax").from(taIn);//console.log(kecepatanMax);
 	vmax=kecepatanMax;
-	var gayaMax=getValue("ForceMax").from(taIn);console.log(gayaMax);
+	vmin=vmax-0.0001;
+	var gayaMax=getValue("ForceMax").from(taIn);//console.log(gayaMax);
 	fmax=gayaMax;
-	var jumlahPartikel=getValue("N-Partikle").from(taIn);console.log(jumlahPartikel);
-	n=jumlahPartikel;
+	var JarakC=getValue("RadiusCohesion").from(taIn);//console.log(JarakC);
+	radiusC=JarakC;
+	var JarakA=getValue("RadiusAlignment").from(taIn);//console.log(JarakA);
+	radiusA=JarakA;
+	var JarakS=getValue("RadiusSeparation").from(taIn);//console.log(JarakA);
+	radiusS=JarakS;
+	// var jumlahPartikel=getValue("N-Partikle").from(taIn);//console.log(jumlahPartikel);
+	// n=jumlahPartikel;
+	var jumlahKelompok1=getValue("Kelompok_1").from(taIn);console.log(jumlahKelompok1);
+	var jumlahKelompok2=getValue("Kelompok_2").from(taIn);console.log(jumlahKelompok2);
+	n1=jumlahKelompok1;
+	n2=jumlahKelompok2;
 	f=[];
-	var alignMent=getValue("Alignment").from(taIn);console.log(alignMent);
+	var alignMent=getValue("Alignment").from(taIn);//console.log(alignMent);
 	align=alignMent;
-	var separation=getValue("Separation").from(taIn);console.log(separation);
+	var separation=getValue("Separation").from(taIn);//console.log(separation);
 	separasi=separation; 
-	var Cohesi=getValue("Cohesion").from(taIn);console.log(Cohesi);
+	var Cohesi=getValue("Cohesion").from(taIn);//console.log(Cohesi);
 	cohesi=Cohesi;
-	var waktu=getValue("Time_Out").from(taIn);console.log(waktu);
-	stop=waktu;
+	var Random=getValue("Gaya_acak").from(taIn);//console.log(Random);
+	random=Random;
+	//var waktu=getValue("Time_Out").from(taIn);console.log(waktu);
+	//stop=waktu;
 }
-
-// Component boids
-function boids(){
-	var ca = arguments[0];
-	var ctx = ca.getContext("2d");
-	/////looping for create array 
-	for(let i=0;i<n;i++){
-		var boids={
-			x:/*2+i,*/Math.random()*50,
-			y:/*1+(i*2),*/Math.random()*50,
-			vx:(Math.random()*(vmax-(vmin)))+(vmin),   //(Math.random() * (max - min)) + min
-			vy:(Math.random()*(vmax-(vmin)))+(vmin),   //(Math.random() * (max - min)) + min
-			ax:0,
-			ay:0,
-			r:5,
-			alignx:0,
-			aligny:0,
-			separasix:0,
-			separasiy:0,
-			diffx:0,
-			diffy:0,
-			cohesix:0,
-			cohesiy:0
-		};
-		f.push(boids);
-	}return f,console.log(f);
-}
-
-
-function loop() {
-		//if(time<stop){
-		clear(caOut);
-		for(let i=0;i<f.length;i++){
-			let magStMgA=0;
-			let magStMgS=0;
-			let magStMgC=0;
-			let magLimA=0;
-			let magLimS=0;
-			let magLimC=0;
-			f[i].alignx=0;
-			f[i].aligny=0;
-			f[i].separasix=0;
-			f[i].separasiy=0;
-			f[i].diffx=0;
-			f[i].diffy=0;
-			f[i].cohesix=0;
-			f[i].cohesiy=0;
-			var d,total=0;
-			
-			for(let j=0;j<f.length;j++){
-				if((i-j)!=0){
-					d=Math.sqrt(Math.pow(f[j].x-f[i].x,2)+Math.pow(f[j].y-f[i].y,2));
-					
-					//////perhitungan untuk menentukan sudut atar partiekel/boid
-					var u = Math.sqrt
-						(Math.pow(f[i].x,2)+
-						Math.pow(f[i].y,2));
-					var v = Math.sqrt
-						(Math.pow(f[j].x,2)+
-						Math.pow(f[j].y,2));
-					var dot = 
-						(f[i].x*f[j].x)+
-						(f[i].y*f[j].y);
-					var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
-					if(d<radiusAC&&angleTwo>sudut1&&angleTwo<sudut2){
-				
-						let besarnyaVj=0;
-						////alignment
-						besarnyaVj=Math.sqrt(Math.pow(f[j].vx,2)+Math.pow(f[j].vy,2));
-						f[i].alignx=f[i].alignx+f[j].vx/besarnyaVj;
-						f[i].aligny=f[i].aligny+f[j].vy/besarnyaVj;
-						
-						if(d<radiusS){
-							////separation
-							f[i].diffx=(f[i].x-f[j].x)/(Math.pow(d,2));
-							f[i].diffy=(f[i].y-f[j].y)/(Math.pow(d,2));
-							f[i].separasix=f[i].separasix+f[i].diffx;
-							f[i].separasiy=f[i].separasiy+f[i].diffy;
-						}
-						////cohesien
-						f[i].cohesix=f[i].cohesix+((f[j].x-f[i].x)/d);
-						f[i].cohesiy=f[i].cohesiy+((f[j].y-f[i].y)/d);
-						total+=1;
-					}
-					
-				}
-			}
-			if(total>0){
-				////alignment
-				magStMgA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
-				f[i].alignx=(f[i].alignx/total);
-				f[i].aligny=(f[i].aligny/total);''
-				f[i].alignx=f[i].alignx/magStMgA*vmax;//set mag
-				f[i].aligny=f[i].aligny/magStMgA*vmax;//set mag
-				f[i].alignx=f[i].alignx-f[i].vx;
-				f[i].aligny=f[i].aligny-f[i].vy;
-				magLimA=(Math.sqrt(Math.pow(f[i].alignx,2)+Math.pow(f[i].aligny,2)));
-				if(magLimA>fmax*fmax){////limit
-					f[i].alignx=f[i].alignx/magLimA*fmax;
-					f[i].aligny=f[i].aligny/magLimA*fmax;
-				}
-				////separation
-				magStMgS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
-				f[i].separasix=f[i].separasix/magStMgS*vmax;//set mag
-				f[i].separasiy=f[i].separasiy/magStMgS*vmax;//set mag
-				f[i].separasix=f[i].separasix-f[i].vx;
-				f[i].separasiy=f[i].separasiy-f[i].vy;
-				magLimS=(Math.sqrt(Math.pow(f[i].separasix,2)+Math.pow(f[i].separasiy,2)));
-				if(magLimS>fmax*fmax){////limit
-					f[i].separasix=f[i].separasix/magLimS*fmax;
-					f[i].separasiy=f[i].separasiy/magLimS*fmax;
-				}				
-				if(magStMgS==0){
-					f[i].separasix=0;
-					f[i].separasiy=0;
-				}
-				////cohesion
-				magStMgC=
-				f[i].cohesix=(f[i].cohesix/total);
-				f[i].cohesiy=(f[i].cohesiy/total);
-				f[i].cohesix=f[i].cohesix/magStMgC*vmax;//set mag
-				f[i].cohesiy=f[i].cohesiy/magStMgC*vmax;//set mag
-				f[i].cohesix=f[i].cohesix-f[i].vx;
-				f[i].cohesiy=f[i].cohesiy-f[i].vy;
-				magLimC=(Math.sqrt(Math.pow(f[i].cohesix,2)+Math.pow(f[i].cohesiy,2)));
-				if(magLimC>fmax*fmax){////limit
-					f[i].cohesix=f[i].cohesix/magLimC*fmax;
-					f[i].cohesiy=f[i].cohesiy/magLimC*fmax;
-				}
-			}
-			f[i].ax=f[i].ax+(f[i].alignx*align)+(f[i].separasix*separasi)+(f[i].cohesix*cohesi);
-			f[i].ay=f[i].ay+(f[i].aligny*align)+(f[i].separasiy*separasi)+(f[i].cohesiy*cohesi);
-			
-			///posisi
-			f[i].x=f[i].x+f[i].vx;
-			
-			f[i].y=f[i].y+f[i].vy;
-			
-			///kecepatan
-			f[i].vx=f[i].vx+f[i].ax;
-			f[i].vy=f[i].vy+f[i].ay;
-
-			X=((f[i].x-xmin)/(xmax-xmin))*caOut.width;
-			Y=-((f[i].y-ymin)/(ymax-ymin))*caOut.height + caOut.height;
-			draw(caOut,X,Y,f[i].vx,f[i].vy,radiusAC,sudut1,sudut2);
-			f[i].ax*=0;
-			f[i].ay*=0;
-
-		if(f[i].x<0 ) f[i].x=xmax;
-		if( f[i].x > xmax) f[i].x = 0;
-	         
-	    	if(f[i].y < 0 ) f[i].y=ymax;
-	    	if(f[i].y > ymax) f[i].y = 0;
-		//time=time+1;	
-		}
-	// }if(time==stop){
-	// 	clearInterval(init);
-	// }time+=time2;console.log(time);
-	}
-
 </script>
 </body>
 </html>
