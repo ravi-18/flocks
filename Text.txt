@@ -1,0 +1,7 @@
+Metode:
+Adapun metode yang digunakan yaitu:
+simulasi dilakukan dengan menginisialisasi variabel awal serta memasukan nilai parameter awal seperti nilai radius untuk cohesion =8, alignment=5, dan separation=0.8, dengan masing masing menggunakan nilai konstanta 0.08, 0.1  dan 0.05. Penentuan nilai tersebut merupakan kombinasi yang cukup baik dalam simulasi ini. Selain parameter tersebut yang dimasukan ada juga nilai dari jumlah anggota tiap grup serta bentuk formasi dengan memasukan nilai 1, 2, 3. Untuk formasi satu anggota berbaris ke belakang, untuk formasi 2 anggotanya berbaris ke samping, sedangkan formasi ke 3 anggota membentuk 2 baris ke samping.
+‌Perbandingan 3 formasi dengan jumlah anggota 4, 6, dan 8 sebanya 10 kali perulangan.
+Dalam hal ini klaster yang ditinjau merupakan klaster berwarna merah yang disebut sebagai N1. Saat dilakukan simulasi, yang diamati adalah terbentuknya kelompok setelah tumbukan serta arah gerak dari setelah tumbukan dari setiap perulangan.
+‌Pariasi jumlah anggota 15, 20, dan 25 dengan menggunakan formasi ke 2.
+Untuk simulasi ini, dilakukan pengamatan klaster berwarna merah yang juga disebut dengan sebutan N1. Pengamatan dilakukan dengan mengamati gerak dari N1 yang menumbuk kelaster kedua yang menghasilkan N1 yang bergerak ke atas atau pun yang mengandung N1 jika hanya terbentuk 2 klaster kembali. Jika hasil tumbukan yang terbentuk hanya 2 klaster maka yang diamati ialah terjadinya pertukaran anggota.
