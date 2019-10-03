@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<script type="text/javascript" src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script type="text/javascript" src="___.js"></script>
+<script type="text/javascript">
+	// Define global variables
+var params,Boids, warna="rgba(255,000,000,1)";
+var Body,Box, graphOut,taIn, taOut, caOut;
+var btLoad, btRead, btStart, btInfo;
+var Tproc=1000/90, proc;
+var xmin=0, ymin=0, xmax=50, ymax=50;
+var XMIN, XMAX, YMIN, YMAX;
+var o, N;
+var align, separasi, cohesi;
+var f=[],
+	arrDataX=[],
+	arrDataY=[],
+	arrDataNo=[],
+	arrDataAI=[],
+	arrDataVo=[],
+	//radius,
+	radiusC,
+	radiusA,	
+	radiusS,
+	sudut1=Math.PI*(0),
+	sudut2=Math.PI*(1/2),
+	sudutArah=Math.PI/4,
+	v0_kel1,
+	v0_kel2;
+var vmax,
+	fmax, 
+	vmin,
+	n1,n2,
+	idx,
+	formasi;
+
+	// Component boids
+function boids(){
+	var ca = arguments[0];
+	var ctx = ca.getContext("2d");
+	var arrV=[];
+		arrDataVo=[];
+	/////looping for create array 
+	/*if(formasi==1){
+		for(let i=0;i<n1;i++){
+			Boids={
+				x:1+i,y:1+i,vx:(vmax/2),vy:(vmax/2),ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:i,
+				grup:0,
+				color:"red"
+			};
+			f.push(Boids);
+			arrV=[f[i].idx,f[i].vx.toFixed(4),f[i].vy.toFixed(4)];console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[i].idx);
+			arrDataX.push(f[i].x.toFixed(3));
+			arrDataY.push(f[i].y.toFixed(3));
+		}
+		for(let l=n1;l<(n1+n2);l++){
+			Boids={
+				x:18+l,y:18+l,vx:(-vmax/2),vy:(-vmax/2),
+				ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:l,
+				grup:0,
+				color:"blue"
+			};
+			f.push(Boids);
+			arrV=[f[l].idx,f[l].vx.toFixed(4),f[l].vy.toFixed(4)];
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[l].idx);
+			arrDataX.push(f[l].x.toFixed(3));
+			arrDataY.push(f[l].y.toFixed(3));
+		}
+	}*/
+	if(formasi==1){
+		for(let i=0;i<n1;i++){
+			Boids={
+				// x:Math.random()*50,
+				// y:Math.random()*50,
+				// vx:(Math.random()*(vmax-(-vmax)))+(-vmax),vy:(Math.random()*(vmax-(-vmax)))+(-vmax),
+				x:25,y:1+i,vx:(0),vy:v0_kel1/*vy:(vmax)*/,ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:i,
+				grup:0,
+				color:"red"
+			};
+			f.push(Boids);
+			arrV=[f[i].idx,f[i].vx.toFixed(4),f[i].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[i].idx);
+			arrDataX.push(f[i].x.toFixed(3));
+			arrDataY.push(f[i].y.toFixed(3));
+		}
+		for(let l=n1;l<(n1+n2);l++){
+			Boids={
+				// x:Math.random()*50,
+				// y:Math.random()*50,
+				// vx:(Math.random()*(vmax-(-vmax)))+(-vmax),vy:(Math.random()*(vmax-(-vmax)))+(-vmax),
+				x:26,y:10+l,vx:(0),vy:-v0_kel2,/*vy:(-vmax),*/
+				ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:l,
+				grup:0,
+				color:"blue"
+			};
+			f.push(Boids);
+			arrV=[f[l].idx,f[l].vx.toFixed(4),f[l].vy.toFixed(4)];
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[l].idx);
+			arrDataX.push(f[l].x.toFixed(3));
+			arrDataY.push(f[l].y.toFixed(3));
+		}
+	}
+	if(formasi==2){
+		for(let i=0;i<n1;i++){
+			Boids={
+				x:5+i,y:18,vx:0,/*vy:(vmax)*/vy:v0_kel1,ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:i,
+				grup:0,
+				color:"red"
+			};
+			f.push(Boids);
+			arrV=[f[i].idx,f[i].vx.toFixed(4),f[i].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[i].idx);
+			arrDataX.push(f[i].x.toFixed(3));
+			arrDataY.push(f[i].y.toFixed(3));
+		}
+		for(let l=n1;l<(n1+n2);l++){
+			Boids={
+				x:9+(l-n1),y:28,vx:0,/*vy:(-vmax),*/vy:-v0_kel2,ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:l,
+				grup:0,
+				color:"blue"
+			};
+			f.push(Boids);
+			arrV=[f[l].idx,f[l].vx.toFixed(4),f[l].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[l].idx);
+			arrDataX.push(f[l].x.toFixed(3));
+			arrDataY.push(f[l].y.toFixed(3));
+		}
+	}
+	if(formasi==3){////10-15 jd 2 grup sedangkan dari 4-9 dan 16 menjadi 1 grup
+		for(let i=0;i<Math.ceil(n1/2);i++){
+			Boids={
+				x:10+i,y:20,vx:0,vy:v0_kel1,/*vy:(vmax),*/ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:i,
+				grup:0,
+				color:"red"
+			};
+			f.push(Boids);
+			arrV=[f[i].idx,f[i].vx.toFixed(4),f[i].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[i].idx);
+			arrDataX.push(f[i].x.toFixed(3));
+			arrDataY.push(f[i].y.toFixed(3));	
+		}
+		for(let i=Math.ceil(n1/2);i<n1;i++){
+			Boids={
+				x:10+(i-Math.ceil(n1/2)),y:18,vx:0,vy:v0_kel1,/*vy:(vmax),*/ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:i,
+				grup:0,
+				color:"red"
+			};
+			f.push(Boids);
+			arrV=[f[i].idx,f[i].vx.toFixed(4),f[i].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[i].idx);
+			arrDataX.push(f[i].x.toFixed(3));
+			arrDataY.push(f[i].y.toFixed(3));
+		}
+		let h=Math.ceil(n1+(n2/2));//console.log("h: "+h);
+		for(let k=n1;k<h;k++){
+			Boids={
+				x:10+(k-n1),y:28,vx:0,vy:-v0_kel2,/*vy:(-vmax),*/ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:k,
+				grup:0,
+				color:"blue"
+			};
+			f.push(Boids);
+			arrV=[f[k].idx,f[k].vx.toFixed(4),f[k].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[k].idx);
+			arrDataX.push(f[k].x.toFixed(3));
+			arrDataY.push(f[k].y.toFixed(3));
+		}
+		for(let l=h;l<(n1+n2);l++){
+			Boids={
+				x:10+(l-h),y:30,
+				vx:0,vy:-v0_kel2/*vy:(-vmax)*/,ax:0,ay:0,r:5,
+				alignx:0,aligny:0,
+				separasix:0,separasiy:0,
+				diffx:0,diffy:0,
+				cohesix:0,cohesiy:0,
+				idx:l,
+				grup:0,
+				color:"blue"
+			};
+			f.push(Boids);
+			arrV=[f[l].idx,f[l].vx.toFixed(4),f[l].vy.toFixed(4)];//console.log(arrV);
+			arrDataVo.push(arrV);
+
+			arrDataNo.push(f[l].idx);
+			arrDataX.push(f[l].x.toFixed(3));
+			arrDataY.push(f[l].y.toFixed(3));
+		}
+	}
+
+	return f,console.log(f);
+}
+
+////looping 
+function loop() {
+		arrDataX=[];
+		arrDataY=[];
+		arrDataNo=[];
+		clear(caOut);
+		for(boid of f){
+		// for(let i=0;i<f.length;i++){
+			let magStMgA=0;
+			let magStMgS=0;
+			let magStMgC=0;
+			let magLimA=0;
+			let magLimS=0;
+			let magLimC=0;
+			boid.alignx=0;
+			boid.aligny=0;
+			boid.separasix=0;
+			boid.separasiy=0;
+			boid.diffx=0;
+			boid.diffy=0;
+			boid.cohesix=0;
+			boid.cohesiy=0;
+			var d,totalA=0,totalC=0;
+			
+			///arah gerak
+			// arah=Math.atan2(f[i].vy,f[i].vx) + Math.PI / 2;
+			// var dataArah=[f[i].idx,arah.toFixed(4)];
+			// arrDataAI.push(dataArah);
+
+			for(other of f){
+			// for(let j=0;j<f.length;j++){
+					d=Math.sqrt(Math.pow(other.x-boid.x,2)+Math.pow(other.y-boid.y,2));		
+					if(boid!=other){	
+				// 	if(d<radiusC){
+				// 		console.log(boid.idx+" dan "+other.idx+ " radius = " + d);
+				// }
+					//////perhitungan untuk menentukan sudut atar partiekel/boid
+					var u = Math.sqrt
+						(Math.pow(boid.x,2)+
+						Math.pow(boid.y,2));
+					var v = Math.sqrt
+						(Math.pow(other.x,2)+
+						Math.pow(other.y,2));
+					var dot = 
+						(boid.x*other.x)+
+						(boid.y*other.y);
+					//var angleTwo=Math.acos(dot/(u*v));////hasil sudut yang telah di hitung di simpan dalam angleTwo
+					var angleTwo = Math.acos(Math.min(1, Math.max(-1, dot/(u*v))));//console.log("angle between : ");console.log(angle);//console.log("angle between (derajat) : "+angle*(180/Math.PI));
+					if(d<radiusS&&angleTwo>sudut1&&angleTwo<sudut2){
+						////separation
+						boid.diffx=(boid.x-other.x)/(Math.pow(d,2));
+						boid.diffy=(boid.y-other.y)/(Math.pow(d,2));
+						boid.separasix=boid.separasix+boid.diffx;
+						boid.separasiy=boid.separasiy+boid.diffy;//console.log("Index boid  : "+boid.idx+" | index other"+other.idx);
+					}
+
+					if(d<radiusC&&angleTwo>sudut1&&angleTwo<sudut2){
+						////cohesien
+						boid.cohesix=boid.cohesix+((other.x-boid.x)/d);
+						boid.cohesiy=boid.cohesiy+((other.y-boid.y)/d);
+						totalC+=1;
+						//arrDataNo.push(i);arrDataY.push(f[j].idx);arrDataX.push(totalC);
+						//console.log("grup : "+totalC+" i : "+i+" dengan "+"j : "+j);	
+					}
+
+					if(d<radiusA&&angleTwo>sudut1&&angleTwo<sudut2){
+						let besarnyaVj=0;
+						////alignment
+						besarnyaVj=Math.sqrt(Math.pow(other.vx,2)+Math.pow(other.vy,2));
+						boid.alignx=boid.alignx+other.vx/besarnyaVj;//console.log(f[i].idx+" Alx : "+f[i].alignx);
+						boid.aligny=boid.aligny+other.vy/besarnyaVj;//console.log(f[i].idx+" Aly : "+f[i].aligny);
+						totalA+=1;
+						// if(f[i].alignx==isNaN&&f[i].aligny==isNaN){
+						// 	f[i].alignx=0;
+						// 	f[i].aligny=0;
+						// }
+					}
+				}
+			}
+			if(totalA>0&&totalC>0){
+				////alignment
+				magStMgA=(Math.sqrt(Math.pow(boid.alignx,2)+Math.pow(boid.aligny,2)));//console.log("magStMgA : "+magStMgA);
+				//if(magStMgA==0)magStMgA=0;
+				boid.alignx=(boid.alignx/totalA);
+				boid.aligny=(boid.aligny/totalA);
+				boid.alignx=boid.alignx/magStMgA*vmax;//set mag
+				boid.aligny=boid.aligny/magStMgA*vmax;//set mag
+				boid.alignx=boid.alignx-boid.vx;//console.log(f[i].idx+" Alx : "+f[i].alignx);
+				boid.aligny=boid.aligny-boid.vy;//console.log(f[i].idx+" Aly : "+f[i].aligny);
+				magLimA=(Math.sqrt(Math.pow(boid.alignx,2)+Math.pow(boid.aligny,2)));
+				//if(magLimA==0)magLimA=0;//console.log("magLimA : "+magLimA);
+				if(magLimA>fmax*fmax){////limit
+					boid.alignx=boid.alignx/magLimA*fmax;
+					boid.aligny=boid.aligny/magLimA*fmax;
+				}
+				if(magStMgA==0&&totalA==0/*&&magLimA==0*/){
+					boid.alignx=0;
+					boid.aligny=0;
+				}
+				////separation
+				magStMgS=(Math.sqrt(Math.pow(boid.separasix,2)+Math.pow(boid.separasiy,2)));
+				boid.separasix=boid.separasix/magStMgS*vmax;//set mag
+				boid.separasiy=boid.separasiy/magStMgS*vmax;//set mag
+				boid.separasix=boid.separasix-boid.vx;
+				boid.separasiy=boid.separasiy-boid.vy;
+				magLimS=(Math.sqrt(Math.pow(boid.separasix,2)+Math.pow(boid.separasiy,2)));
+				if(magLimS>fmax*fmax){////limit
+					boid.separasix=boid.separasix/magLimS*fmax;
+					boid.separasiy=boid.separasiy/magLimS*fmax;
+				}				
+				if(magStMgS==0/*&&magLimS==NaN*//*&&magLimS==0*/){
+					boid.separasix=0;
+					boid.separasiy=0;
+				}
+				////cohesion
+				magStMgC=(Math.sqrt(Math.pow(boid.cohesix,2)+Math.pow(boid.cohesiy,2)));
+				//if(magStMgC==0)magStMgC=1;
+				boid.cohesix=(boid.cohesix/totalC);
+				boid.cohesiy=(boid.cohesiy/totalC);
+				boid.cohesix=boid.cohesix/magStMgC*vmax;//set mag
+				boid.cohesiy=boid.cohesiy/magStMgC*vmax;//set mag
+				boid.cohesix=boid.cohesix-boid.vx;//console.log(f[i].idx+" Alx : "+f[i].alignx);
+				boid.cohesiy=boid.cohesiy-boid.vy;//console.log(f[i].idx+" Aly : "+f[i].aligny);
+				magLimC=(Math.sqrt(Math.pow(boid.cohesix,2)+Math.pow(boid.cohesiy,2)));
+				//if(magLimC==0)magLimC=1;
+				if(magLimC>fmax*fmax){////limit
+					boid.cohesix=boid.cohesix/magLimC*fmax;
+					boid.cohesiy=boid.cohesiy/magLimC*fmax;
+				}
+				if(magStMgC==0&&totalC==0/*&&magLimC==0*/){
+					boid.cohesix=0;
+					boid.cohesiy=0;
+				}
+			}
+			
+			//console.log("alignx : "+boid.alignx*align+" aligny : "+boid.aligny*align);
+			// ///percepatan
+			boid.ax=boid.ax+(boid.alignx*align)+(boid.cohesix*cohesi)+(boid.separasix*separasi);//console.log(f[i].idx+"ax : "+f[i].ax);
+			boid.ay=boid.ay+(boid.aligny*align)+(boid.cohesiy*cohesi)+(boid.separasiy*separasi);//console.log(f[i].idx+"ay : "+f[i].ay);
+
+			///kecepatan
+			boid.vx=boid.vx+boid.ax;
+			boid.vy=boid.vy+boid.ay;
+
+			///limit kecepatan
+			var magLimV=(Math.sqrt(Math.pow(boid.vx,2)+Math.pow(boid.vy,2)));//console.log(f[i].idx+"magLimV : "+magLimV);
+			if(magLimV>vmax*vmax){////limit
+				boid.vx=boid.vx/magLimV*vmax;
+				boid.vy=boid.vy/magLimV*vmax;
+			}
+			///posisi
+			boid.x=boid.x+boid.vx;
+			boid.y=boid.y+boid.vy;
+
+			X=((boid.x-xmin)/(xmax-xmin))*caOut.width;
+			Y=-((boid.y-ymin)/(ymax-ymin))*caOut.height + caOut.height;
+			draw(caOut,X,Y,boid.vx,boid.vy,radiusA,sudut1,sudut2,boid.idx,boid.color);
+			boid.ax*=0;
+			boid.ay*=0;
+
+			if(boid.x<0 ) boid.x=xmax;
+			if(boid.x > xmax) boid.x = 0;
+	         
+	    	if(boid.y < 0 ) boid.y=ymax;
+	    	if(boid.y > ymax) boid.y = 0;
+		//time=time+1;	
+		var q={
+			x:boid.ax,
+			y:boid.ay
+		};
+		arrDataNo.push(boid.idx);
+		arrDataX.push(boid.x.toFixed(3));
+		arrDataY.push(boid.y.toFixed(3));
+		
+		//console.log("x : "+f[i].ax+"| y : "+f[i].ay);
+	}	//console.log("___________________")
+}
+
+
+// Execute main function
+main();
+
+// Define main function
+function main() {
+	initParams();
+	createVisualElements();
+}
+
+// Initialize parameters
+function initParams() {
+	var p = "";
+	p+="#Initialize\n";
+	//p+="N-Partikle		: 4\n";
+	p+="VelocityMax		: 0.05\n";
+	p+="ForceMax		: 0.055\n";
+	p+="RadiusCohesion		: 7\n";
+	p+="RadiusAlignment		: 3\n";
+	p+="RadiusSeparation	: 0.8\n";
+	p+="Cohesion		: 0.08\n";
+	p+="Alignment		: 0.1\n";
+	p+="Separation		: 0.05\n";
+	p+="\n";
+	p+="#Grup\n";
+	p+="Kelompok_1		: 20 \n";
+	p+="Kecepatan awal kel1	: 0.03 \n";
+	p+="Kelompok_2		: 20 \n";
+	p+="Kecepatan awal kel2	: 0.04 \n";
+	p+="Formasi (1,2,3)		: 2 \n";
+	//p+="Gaya_acak		: 0.5\n";
+	//p+="Time_Out		: 2000\n";
+	p+="\n";
+	
+	params = p;
+	
+	//digit = 4;
+}
+
+///create visual element
+function createVisualElements(){
+	Body=document.getElementsByTagName('body')[0];
+	with(Body.style){
+		margin="auto";
+		padding="auto";
+	}
+	//create Element Div 
+	Box=document.createElement("div");
+	with(Box.style){
+		width="827px";
+		height="518px";
+		margin="10px";
+		// padding="auto";
+		background="#eee";
+		float="left";
+	}
+	//create output graph
+	graphOut=document.createElement("div");
+	graphOut.id="graph";
+	with(graphOut.style){
+		width="500px";
+		height="518px";
+		float="left";
+		margin="10px 0";
+	}
+	//create Element Div left
+	DivL=document.createElement("div");
+	with(DivL.style){
+		width="310px";
+		height="510px";
+		border="1px solid";
+		float="left";
+		margin="2px 0 0 1px ";
+		border = "1px solid #eee";
+		background = "#eee";
+	}
+	//create Element Div right
+	DivR=document.createElement("div");
+	with(DivR.style){
+		width="510px";
+		height="510px";
+		float="left";
+		margin="2px 0 0 1px ";
+	}
+	//create Element text area input
+	taIn=document.createElement("textarea");
+	with(taIn.style){
+		width="300px";
+		height="230px";
+		overflowY = "scroll";
+	}
+	//create Element text area output
+	taOut=document.createElement("textarea");
+	with(taOut.style){
+		width="300px";
+		height="230px";
+		overflowY = "scroll";
+	}
+	//create Element button Load
+	btLoad=document.createElement("button");
+	with(btLoad){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Load";
+		id="Load";
+		disabled=false;
+		addEventListener("click", buttonClick);
+	}
+	//create Element button Read
+	btRead=document.createElement("button");
+	with(btRead){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Read";
+		id="Read";
+		disabled=true;
+		addEventListener("click", buttonClick);	
+	}
+	//create Element button Start
+	btStart=document.createElement("button");
+	with(btStart){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Start";
+		id="Start";
+		disabled=true;
+		addEventListener("click", buttonClick);
+	}
+	//create Element button Info
+	btInfo=document.createElement("button");
+	with(btInfo){
+		style.width= "70px";
+		style.height= "25px";
+		style.margin= "auto 3.3px";
+		style.padding= "auto";
+		innerHTML="Info";
+		id="Info";
+		addEventListener("click", buttonClick);
+	}
+	//create Element Canvas
+	caOut=document.createElement("canvas");
+	caOut.width="509";
+	caOut.height="509";
+	with(caOut.style){
+		width=caOut.width+"px";
+		height=caOut.height+"px";
+		border = "1px solid #aaa";
+		background = "#fff";
+	}
+
+	document.body.append(Box);
+	document.body.append(graphOut);
+	Box.append(DivL);
+	DivL.append(taIn);
+	DivL.append(taOut);
+	DivL.append(btLoad);
+	DivL.append(btRead);
+	DivL.append(btStart);
+	DivL.append(btInfo);
+	Box.append(DivR);
+	DivR.append(caOut);
+}
+
+// Handle event of button click
+function buttonClick() {
+	var id = event.target.id;
+	switch(id) {
+	case "Load":
+		btRead.disabled = false;
+		loadParams();
+	break;
+	case "Read":
+		arrDataNo=[];
+		arrDataX=[];
+		arrDataY=[];
+		readParams();
+		clearCanvas(caOut);
+		boids(caOut);
+		///kecepatan awal tiap partikel
+		var dataVo="\n"+"idx	vx0	vy0\n";
+		for(var jj=0;jj<arrDataVo.length;jj++){
+			dataVo+=arrDataVo[jj][0]+"	";
+			dataVo+=arrDataVo[jj][1]+"	";
+			dataVo+=arrDataVo[jj][2]+"\n";
+		}
+		dataVo+="\n";
+		addText(dataVo).to(taOut);
+
+		//menggambar posisi awal
+		for(var y=0;y<n1+n2;y++){
+			X=((f[y].x-xmin)/(xmax-xmin))*caOut.width;//console.log(X);
+			Y=-((f[y].y-ymin)/(ymax-ymin))*caOut.height + caOut.height;//console.log(Y);
+			draw(caOut,X,Y,f[y].vx,f[y].vy,radiusA,sudut1,sudut2,f[y].idx,f[y].color);
+		}
+
+		var txt="Nomor"+"	";
+			txt+="Index"+"	";
+			txt+="Pos X"+"	";
+			txt+="Pos Y"+"\n";
+			addText(txt).to(taOut);
+		for(var i1=0;i1<arrDataX.length;i1++){
+			txt =(i1+1)+"	";
+			txt+=arrDataNo[i1]+"	";
+			txt+=arrDataX[i1]+"	";
+			txt+=arrDataY[i1]+"\n";
+			addText(txt).to(taOut);
+		}txt+="\n";
+		btStart.disabled = false;
+	break;
+	case "Start":
+		if(btStart.innerHTML == "Start") {
+			btLoad.disabled = true;
+			btRead.disabled = true;
+			btInfo.disabled = true;
+			btStart.innerHTML = "Stop";
+			proc = setInterval(loop, Tproc);
+			graphOut.style.border="";
+			graphOut.style.background="#fff";
+			graphOut.innerHTML="";
+		} else {
+			btLoad.disabled = false;
+			btRead.disabled = false;
+			btInfo.disabled = false;
+			btStart.innerHTML = "Start";
+
+			///pengecekan nilai kecepatan dan percepatan
+			var dataV="\n"+"idx	"+"kecepatan	"+/*"percepatan	"+*/"\n";
+			for(var u=0;u<f.length;u++){
+				dataV+=f[u].idx;
+				dataV+="	"+f[u].vx.toFixed(4);
+				dataV+="	"+f[u].vy.toFixed(4);
+				// dataV+="	"+f[u].ax.toFixed(2);
+				// dataV+="	"+f[u].ay.toFixed(2);
+				dataV+="\n";
+				
+			}
+			dataV+="\n";
+			addText(dataV).to(taOut);
+
+			///hasil arah tiap partikel
+			/*var dataAI="idx	"+"Arah Gerak partikel\n";
+			for(var ii=0;ii<arrDataAI.length;ii++){
+				dataAI+=arrDataAI[ii][0]+"	";
+				dataAI+=arrDataAI[ii][1]+"\n";
+			}
+			dataAI+="\n";*/
+			//addText(dataAI).to(taOut);
+
+			var tx ="Nomor"+"	";
+				tx+="Index"+"	";
+				tx+="Pos X"+"	";
+				tx+="Pos Y"+"\n";
+				addText(tx).to(taOut);
+			for(var i=0;i<arrDataX.length;i++){
+				tx =(i+1)+"	";
+				tx+=arrDataNo[i]+"	";
+				tx+=arrDataX[i]+"	";
+				tx+=arrDataY[i]+"\n";
+
+				addText(tx).to(taOut);
+
+				var trace1 = {
+					x: arrDataX,
+					y: arrDataY,
+					mode: 'markers'
+				};
+
+				var data = [trace1];
+				var layout ={
+					title: 'Grafik Posisi boids',
+					xaxis: {
+						title: 'Posisi X',
+						//showgrid: false,
+						//zeroline: false
+					},
+					yaxis: {
+						title: 'Posisi Y',
+						//showline: false,
+						//zeroline: false
+					}
+				};
+				Plotly.newPlot('graph', data, layout);
+				graphOut.style.border="1px solid";
+				graphOut.style.background="#eee";
+			
+			}
+			tx="\n";
+			addText(tx).to(taOut);
+
+			console.log(f);
+			clearInterval(proc);
+		}
+	break;
+	case "Info":
+		var info = "";
+		info += "\n";
+		info += "floks.js\n";
+		info += "Simulation of self-propelled particles";
+		info += "Sparisoma Viridi, ";
+		info += "Ariq Dhia Irfanudin, ";
+		info += "Dinda Ravi Algifari, ";
+		info += "Yudha Satya Perkasa\n";
+		info += "sorce : http://github.com/ravi-18/flocks/\n";
+		info += "Sumber layout : https://github.com/dudung/butiran.js\n";
+		info += "\n";
+		info += "Load  load parameters\n";
+		info += "Read  read parameters\n";
+		info += "Start start simulation\n";
+		info += "Info  show this messages\n";
+		info += "\n";
+		addText(info).to(taOut);
+	break;
+	default:
+	}
+}
+
+// Load parameters
+function loadParams() {
+	clearText(taIn);
+	addText(params).to(taIn);
+}
+
+// Clear a Textarea
+function clearText() {
+	var ta = arguments[0];
+	ta.value = "";
+}
+
+// Add text to a textarea
+function addText(){
+	var text=arguments[0];
+	var result={
+		to:function(){
+			var ta=arguments[0];
+			ta.value +=text;
+			ta.scrollTop = ta.scrollHeight;
+		}
+	}
+	return result;
+}
+
+// Get parameter value from a Textarea
+function getValue() {
+	var key = arguments[0];
+	var result = {
+		from: function() {
+			var ta = arguments[0];
+			var lines = ta.value.split("\n");
+			var Nl = lines.length;
+			for(var l = 0; l < Nl; l++) {
+				var words = lines[l].split(":");
+				var Nw = words.length;
+				var value;
+				if(words[0].indexOf(key) == 0) {
+					if(Nw == 2) {
+						value = parseFloat(words[1]);
+					return value;// console.log(value);
+					}
+				}
+			}
+		}
+	}
+	return result;	
+}
+
+// Clear canvas
+function clearCanvas(caOut) {
+	var width = caOut.width;
+	var height = caOut.height;
+	var cx = caOut.getContext("2d");
+	cx.clearRect(0, 0, width, height);
+}
+
+// Read parameters
+function readParams() {
+	// Get parameters of initialize
+	var kecepatanMax=getValue("VelocityMax").from(taIn);//console.log(kecepatanMax);
+	vmax=kecepatanMax;
+	vmin=vmax-0.001;
+	var gayaMax=getValue("ForceMax").from(taIn);//console.log(gayaMax);
+	fmax=gayaMax;
+	var JarakC=getValue("RadiusCohesion").from(taIn);//console.log(JarakC);
+	radiusC=JarakC;
+	var JarakA=getValue("RadiusAlignment").from(taIn);//console.log(JarakA);
+	radiusA=JarakA;
+	var JarakS=getValue("RadiusSeparation").from(taIn);//console.log(JarakA);
+	radiusS=JarakS;
+	// var jumlahPartikel=getValue("N-Partikle").from(taIn);//console.log(jumlahPartikel);
+	// n=jumlahPartikel;
+	var jumlahKelompok1=getValue("Kelompok_1").from(taIn);//console.log(jumlahKelompok1);
+	var jumlahKelompok2=getValue("Kelompok_2").from(taIn);
+	n1=jumlahKelompok1;
+	//isNaN(jumlahKelompok2)?0:jumlahKelompok2;
+	n2=jumlahKelompok2;
+	var kecKel1=getValue("Kecepatan awal kel1").from(taIn);
+	var kecKel2=getValue("Kecepatan awal kel2").from(taIn);
+	v0_kel1=kecKel1;
+	v0_kel2=kecKel2;
+	//console.log("N2 : "+jumlahKelompok2);
+	f=[];
+	var Formasi=getValue("Formasi (1,2,3)").from(taIn);
+	formasi=Formasi;
+	var alignMent=getValue("Alignment").from(taIn);//console.log(alignMent);
+	align=alignMent;
+	var separation=getValue("Separation").from(taIn);//console.log(separation);
+	separasi=separation; 
+	var Cohesi=getValue("Cohesion").from(taIn);//console.log(Cohesi);
+	cohesi=Cohesi;
+	
+	//var waktu=getValue("Time_Out").from(taIn);console.log(waktu);
+	//stop=waktu;
+}
+</script>
+</body>
+</html>
